@@ -1,18 +1,20 @@
 'use client';
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import {
   Scale, ArrowRight, FileWarning, MessageSquare, EyeOff,
   Users, Briefcase, Compass, BookOpen, ShieldCheck,
   Award, Heart, Star, Quote,
   Mail, Phone, MapPin, Facebook, Linkedin, Instagram, Twitter,
+  ThumbsUp, ThumbsDown, MessageCircle,
 } from 'lucide-react';
 import Header from '@/components/Header';
 import PublicSidebar from '@/components/PublicSidebar';
 import dynamic from 'next/dynamic';
 import { useAuth } from '@/lib/auth';
 import { useLanguage } from '@/lib/LanguageContext';
+import { dbService, FeedPost } from '@/lib/db';
 
 const ThreeCanvas = dynamic(() => import('@/components/ThreeCanvas'), {
   ssr: false,
@@ -56,6 +58,146 @@ const ABOUT_COLORS  = [
   'from-green-500/10 to-green-600/5 border-green-200/50 text-green-600',
   'from-red-500/10 to-red-600/5 border-red-200/50 text-red-600',
 ];
+
+// ── Public Community Feed (no login needed) ────────────────────────────────────
+const CATEGORY_COLORS: Record<string, string> = {
+  'Constitutional Remedies': 'bg-blue-100 text-blue-700 border-blue-200/60 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-700/40',
+  'Fundamental Rights':      'bg-purple-100 text-purple-700 border-purple-200/60 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-700/40',
+  'Civil Rights':            'bg-green-100 text-green-700 border-green-200/60 dark:bg-green-900/30 dark:text-green-300 dark:border-green-700/40',
+  'Labor Law':               'bg-orange-100 text-orange-700 border-orange-200/60 dark:bg-orange-900/30 dark:text-orange-300 dark:border-orange-700/40',
+  'Criminal Defense':        'bg-red-100 text-red-700 border-red-200/60 dark:bg-red-900/30 dark:text-red-300 dark:border-red-700/40',
+};
+const DEFAULT_CAT_COLOR = 'bg-brand-100 text-brand-700 border-brand-200/60 dark:bg-brand-900/30 dark:text-brand-300 dark:border-brand-700/40';
+
+function PublicCommunityFeed({ user }: { user: any }) {
+  const [posts, setPosts] = useState<FeedPost[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    dbService.getFeedPosts(false)
+      .then(data => setPosts(data.slice(0, 6)))
+      .catch(() => setPosts([]))
+      .finally(() => setLoading(false));
+  }, []);
+
+  return (
+    <section className="py-24 px-4 sm:px-6 lg:px-10 bg-white/50 dark:bg-brand-900/10 border-y border-brand-100/40 dark:border-brand-900/30">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <Reveal className="text-center mb-16">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-100/80 dark:bg-brand-900/40 border border-brand-200/60 dark:border-brand-700/40 text-brand-700 dark:text-brand-300 text-xs font-semibold uppercase tracking-wider mb-4">
+            <MessageCircle className="h-3.5 w-3.5 text-gold-500" />
+            Live Community
+          </div>
+          <h2 className="font-bold text-[clamp(1.8rem,4vw,3rem)] text-[#0B192C] dark:text-brand-50 mb-4">
+            Community Voices
+          </h2>
+          <div className="section-divider mb-5" />
+          <p className="text-[#0B192C]/65 dark:text-brand-200/65 max-w-2xl mx-auto text-base sm:text-lg">
+            Real discussions from citizens seeking and sharing legal guidance across Nepal. Join the conversation — no barriers, just justice.
+          </p>
+        </Reveal>
+
+        {/* Posts Grid */}
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="glass-card p-7 h-48 animate-pulse bg-brand-100/50 dark:bg-brand-900/20" />
+            ))}
+          </div>
+        ) : posts.length === 0 ? (
+          <div className="text-center py-16 text-[#0B192C]/40 dark:text-brand-300/40 text-sm">
+            No community posts yet. Be the first to start a discussion!
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {posts.map((post, i) => {
+              const catColor = CATEGORY_COLORS[post.category] || DEFAULT_CAT_COLOR;
+              const timeAgo = (() => {
+                const diff = (Date.now() - new Date(post.created_at).getTime()) / 1000;
+                if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+                if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+                return `${Math.floor(diff / 86400)}d ago`;
+              })();
+              return (
+                <Reveal key={post.id} delay={`${i * 70}ms`}>
+                  <div className="glass-card p-6 flex flex-col h-full blue-glow-hover group cursor-default">
+                    {/* Category + time */}
+                    <div className="flex items-center justify-between mb-4">
+                      <span className={`inline-block px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border ${catColor}`}>
+                        {post.category}
+                      </span>
+                      <span className="text-[10px] text-[#0B192C]/40 dark:text-brand-300/40 font-medium">{timeAgo}</span>
+                    </div>
+
+                    {/* Title */}
+                    <h3 className="font-bold text-[0.97rem] text-[#0B192C] dark:text-brand-50 leading-snug mb-2 group-hover:text-brand-700 dark:group-hover:text-brand-300 transition-colors flex-1">
+                      {post.title}
+                    </h3>
+
+                    {/* Excerpt */}
+                    <p className="text-sm text-[#0B192C]/60 dark:text-brand-200/60 leading-relaxed line-clamp-3 mb-5">
+                      {post.content}
+                    </p>
+
+                    {/* Footer */}
+                    <div className="flex items-center justify-between pt-4 border-t border-brand-100/50 dark:border-brand-800/30">
+                      {/* Author */}
+                      <div className="flex items-center gap-2.5">
+                        <div className="h-7 w-7 rounded-xl bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
+                          {post.anonymous ? '?' : (post.author_name || 'A').charAt(0)}
+                        </div>
+                        <span className="text-xs font-semibold text-[#0B192C]/65 dark:text-brand-300/65 truncate max-w-[90px]">
+                          {post.anonymous ? 'Anonymous' : post.author_name}
+                        </span>
+                      </div>
+                      {/* Votes */}
+                      <div className="flex items-center gap-3">
+                        <span className="flex items-center gap-1 text-xs font-semibold text-green-600 dark:text-green-400">
+                          <ThumbsUp className="h-3.5 w-3.5" />
+                          {post.likes}
+                        </span>
+                        <span className="flex items-center gap-1 text-xs font-semibold text-red-500/80 dark:text-red-400/80">
+                          <ThumbsDown className="h-3.5 w-3.5" />
+                          {post.disagree_votes || 0}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </Reveal>
+              );
+            })}
+          </div>
+        )}
+
+        {/* CTA */}
+        <Reveal className="text-center mt-12">
+          <p className="text-[#0B192C]/55 dark:text-brand-300/55 text-sm mb-5">
+            Join thousands of citizens discussing legal rights, sharing experiences, and supporting each other.
+          </p>
+          <div className="flex flex-wrap justify-center gap-4">
+            <Link
+              href={user ? '/community' : '/signup'}
+              className="btn-primary inline-flex items-center gap-2 px-7 py-3.5 text-sm font-semibold group"
+            >
+              <MessageCircle className="h-4 w-4" />
+              {user ? 'Go to Community' : 'Join the Community'}
+              <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+            </Link>
+            {!user && (
+              <Link
+                href="/login"
+                className="btn-glass inline-flex items-center gap-2 px-7 py-3.5 text-sm font-semibold"
+              >
+                Already a member? Sign in
+              </Link>
+            )}
+          </div>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 export default function Home() {
@@ -417,6 +559,11 @@ export default function Home() {
         </section>
 
         {/* ════════════════════════════════════════════════════════════════════
+            COMMUNITY FEED SECTION (public, no login required)
+        ══════════════════════════════════════════════════════════════════════ */}
+        <PublicCommunityFeed user={user} />
+
+        {/* ════════════════════════════════════════════════════════════════════
             CONTACT SECTION
         ══════════════════════════════════════════════════════════════════════ */}
         <section id="contact" className="py-24 px-4 sm:px-6 lg:px-10">
@@ -538,8 +685,8 @@ export default function Home() {
             {/* Brand */}
             <div className="space-y-5 lg:col-span-1">
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-2xl bg-gold-500/15 border border-gold-500/25">
-                  <Scale className="h-5 w-5 text-gold-400" />
+                <div className="p-1 rounded-2xl bg-white border border-gold-500/25 h-9 w-9 flex items-center justify-center overflow-hidden">
+                  <img src="/image/logo.png" alt="Logo" className="h-7 w-7 object-contain" />
                 </div>
                 <span className="font-bold text-lg tracking-wide text-brand-50">न्याय Mitra</span>
               </div>
