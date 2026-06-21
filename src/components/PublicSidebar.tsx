@@ -105,9 +105,9 @@ const PublicSidebar: React.FC = () => {
   const SidebarContent = ({ mobile = false }: { mobile?: boolean }) => (
     <>
       {/* ── Logo ────────────────────────────────────────────────────────── */}
-      <div className={`flex items-center h-[88px] border-b border-white/10 dark:border-brand-900/30 px-5 ${isCollapsed && !mobile ? 'justify-center' : 'gap-3'}`}>
-        <div className="flex-shrink-0 p-0.5 rounded-2xl bg-white border border-gold-500/30 h-20 w-20 flex items-center justify-center overflow-hidden shadow-sm">
-          <img src="/image/logo.png" alt="Logo" className="h-[76px] w-[76px] object-contain" />
+      <div className={`flex items-center h-[72px] border-b border-white/10 dark:border-brand-900/30 px-5 ${isCollapsed && !mobile ? 'justify-center' : 'gap-3'}`}>
+        <div className="flex-shrink-0 p-2 rounded-2xl bg-gradient-to-br from-gold-500/20 to-gold-600/10 border border-gold-500/30">
+          <Scale className="h-6 w-6 text-gold-500" />
         </div>
         {(!isCollapsed || mobile) && (
           <div className="animate-fade-in overflow-hidden">

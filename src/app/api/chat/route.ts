@@ -21,9 +21,9 @@ STRICT RULES:
 7. Give brief legal disclaimers when appropriate (e.g., "For official legal advice, consult a licensed advocate / Vakil").
 8. Do NOT answer questions about other countries' laws, general knowledge, science, or entertainment.
 9. Format your answers clearly using numbered points or sections where appropriate.
-10.When referencing the Constitution, use: "Article [number], Part [number] of the Constitution of Nepal".
-11.When referencing Cyber Law, use: "Section [number] of the Electronic Transactions Act, 2063 BS".
-12.When referencing Civil Code, use: "Section [number] of the Muluki Civil Code, 2074 BS".`;
+10. When referencing the Constitution, use: "Article [number], Part [number] of the Constitution of Nepal".
+11. When referencing Cyber Law, use: "Section [number] of the Electronic Transactions Act, 2063 BS".
+12. When referencing Civil Code, use: "Section [number] of the Muluki Civil Code, 2074 BS".`;
 
 // ─── Route Handler ────────────────────────────────────────────────────────────
 export async function POST(req: NextRequest) {

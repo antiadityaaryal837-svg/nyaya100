@@ -243,8 +243,8 @@ export default function Signup() {
 
         {/* Header */}
         <div className="text-center space-y-3">
-          <div className="inline-flex p-2.5 rounded-3xl bg-white border border-brand-200/50 dark:border-brand-700/40 shadow-sm h-16 w-16 items-center justify-center overflow-hidden">
-            <img src="/image/logo.png" alt="Logo" className="h-11 w-11 object-contain" />
+          <div className="inline-flex p-3.5 rounded-3xl bg-gradient-to-br from-brand-100 to-brand-50 dark:from-brand-900/50 dark:to-brand-900/20 border border-brand-200/50 dark:border-brand-700/40 shadow-sm">
+            <Scale className="h-8 w-8 text-brand-600 dark:text-brand-300" />
           </div>
           <div>
             <h1 className="font-bold text-3xl text-[#0B192C] dark:text-brand-50">{t('auth.signupTitle')}</h1>

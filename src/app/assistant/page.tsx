@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Sidebar from '@/components/Sidebar';
-import { dbService, Case, Lawyer } from '@/lib/db';
+import { dbService, Case } from '@/lib/db';
 import { useAuth } from '@/lib/auth';
 import { aiService } from '@/lib/ai';
 import { 
@@ -15,7 +15,6 @@ interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
   timestamp: Date;
-  suggestedLawyer?: Lawyer;
 }
 
 // ─── Session storage key & 10-minute TTL ──────────────────────────────────────
@@ -26,34 +25,6 @@ const DEFAULT_GREETING: ChatMessage = {
   role: 'assistant',
   content: "Namaste! \uD83D\uDE4F I am **Nyaya Mitra AI**, your digital legal companion for Nepalese law.\n\nI can help you understand:\n- **Fundamental Rights** \u2014 Constitution of Nepal (2015)\n- **Cyber Law** \u2014 Electronic Transactions Act, 2063 BS\n- **Civil & Contract Law** \u2014 National Civil Code (Muluki Civil Code), 2074 BS\n\nAll answers are grounded in the official Nepalese legal documents. Select a reported case from the top for a legal audit, or ask me any legal question below.",
   timestamp: new Date()
-};
-
-const findSuggestedLawyer = (text: string, lawyersList: Lawyer[]): Lawyer | undefined => {
-  const lowercaseText = text.toLowerCase();
-  
-  // Check for Family / Gender / Divorce / Marriage / Abuse / Domestic violence
-  if (lowercaseText.includes('family') || lowercaseText.includes('gender') || lowercaseText.includes('divorce') || lowercaseText.includes('marriage') || lowercaseText.includes('domestic') || lowercaseText.includes('abuse') || lowercaseText.includes('spouse') || lowercaseText.includes('wife') || lowercaseText.includes('husband') || lowercaseText.includes('child')) {
-    return lawyersList.find(l => l.specialization.toLowerCase().includes('family') || l.specialization.toLowerCase().includes('gender'));
-  }
-  
-  // Check for Cyber / Hacking / ETA / Electronic / Fraud / Criminal / Arrest / Police / Thief / Stole / Scam
-  if (lowercaseText.includes('cyber') || lowercaseText.includes('hack') || lowercaseText.includes('electronic') || lowercaseText.includes('fraud') || lowercaseText.includes('criminal') || lowercaseText.includes('arrest') || lowercaseText.includes('police') || lowercaseText.includes('scam') || lowercaseText.includes('theft') || lowercaseText.includes('stole')) {
-    return lawyersList.find(l => l.specialization.toLowerCase().includes('criminal') || l.specialization.toLowerCase().includes('defense'));
-  }
-  
-  // Check for Constitutional / Rights / Article / Constitution
-  if (lowercaseText.includes('constitution') || lowercaseText.includes('rights') || lowercaseText.includes('article') || lowercaseText.includes('writ') || lowercaseText.includes('remedy')) {
-    const constitutionalExpert = lawyersList.find(l => l.specialization.toLowerCase().includes('constitutional'));
-    if (constitutionalExpert) return constitutionalExpert;
-    return lawyersList.find(l => l.specialization.toLowerCase().includes('rights'));
-  }
-  
-  // Check for Civil / Contract / Rent / Landlord / Property / Money / Wage / Employment
-  if (lowercaseText.includes('civil') || lowercaseText.includes('contract') || lowercaseText.includes('rent') || lowercaseText.includes('landlord') || lowercaseText.includes('property') || lowercaseText.includes('wage') || lowercaseText.includes('employ') || lowercaseText.includes('labor')) {
-    return lawyersList.find(l => l.specialization.toLowerCase().includes('civil') || l.specialization.toLowerCase().includes('property') || l.specialization.toLowerCase().includes('rights'));
-  }
-  
-  return undefined;
 };
 
 function loadChatSession(): ChatMessage[] {
@@ -85,7 +56,6 @@ export default function AILegalAssistant() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
   const [cases, setCases] = useState<Case[]>([]);
-  const [allLawyers, setAllLawyers] = useState<Lawyer[]>([]);
   const [selectedCaseId, setSelectedCaseId] = useState<string>('general');
   const [selectedCase, setSelectedCase] = useState<Case | null>(null);
 
@@ -110,13 +80,7 @@ export default function AILegalAssistant() {
       return;
     }
     loadCases(user.id);
-    loadLawyers();
   }, [user, authLoading, router]);
-
-  const loadLawyers = async () => {
-    const list = await dbService.getLawyers();
-    setAllLawyers(list);
-  };
 
   // Persist chat session to sessionStorage whenever messages change
   useEffect(() => {
@@ -153,6 +117,7 @@ export default function AILegalAssistant() {
     const list = await dbService.getCases(userId);
     setCases(list);
   };
+
   const handleSendMessage = async (text: string) => {
     if (!text.trim()) return;
     
@@ -175,35 +140,29 @@ export default function AILegalAssistant() {
 
       const reply = await aiService.getLegalAssistanceChat(history);
       
-      const combinedText = `${text} ${reply}`;
-      const suggested = findSuggestedLawyer(combinedText, allLawyers);
-      
       setMessages(prev => [
         ...prev,
         {
           role: 'assistant',
           content: reply,
-          timestamp: new Date(),
-          suggestedLawyer: suggested
+          timestamp: new Date()
         }
       ]);
     } catch (e) {
       console.error(e);
-      const fallbackReply = "I'm having trouble connecting to the network right now. Please review the recommended actions checklist on the right panel.";
-      const suggested = findSuggestedLawyer(text, allLawyers);
       setMessages(prev => [
         ...prev,
         {
           role: 'assistant',
-          content: fallbackReply,
-          timestamp: new Date(),
-          suggestedLawyer: suggested
+          content: "I'm having trouble connecting to the network right now. Please review the recommended actions checklist on the right panel.",
+          timestamp: new Date()
         }
       ]);
     } finally {
       setIsTyping(false);
     }
   };
+
   const handleSuggestionClick = (suggestion: string) => {
     handleSendMessage(suggestion);
   };
@@ -297,38 +256,6 @@ export default function AILegalAssistant() {
                         }`}
                       >
                         {msg.content}
-                        
-                        {msg.suggestedLawyer && (
-                          <div className="mt-4 p-4 rounded-xl border border-legal-gold/20 bg-legal-gold/5 space-y-3 text-left">
-                            <div className="flex items-center gap-3">
-                              <img
-                                src={msg.suggestedLawyer.avatar_url || '/image/lawyer_deepa_karki.png'}
-                                alt={msg.suggestedLawyer.name}
-                                className="h-10 w-10 rounded-full object-cover border border-legal-gold/30 bg-white"
-                              />
-                              <div>
-                                <span className="text-[9px] uppercase tracking-wider text-legal-gold font-bold font-sans">Suggested Legal Expert</span>
-                                <h4 className="text-xs font-bold text-legal-navy dark:text-legal-bone-light">{msg.suggestedLawyer.name}</h4>
-                                <p className="text-[10px] text-legal-navy/60 dark:text-legal-bone/60">{msg.suggestedLawyer.specialization} · {msg.suggestedLawyer.experience_years} yrs exp</p>
-                              </div>
-                            </div>
-                            <div className="flex gap-2">
-                              <button
-                                onClick={() => router.push('/lawyers')}
-                                className="flex-1 py-1.5 rounded-lg bg-legal-navy dark:bg-legal-bone text-legal-bone-light dark:text-legal-navy text-xs font-bold transition-all hover:scale-102 cursor-pointer text-center"
-                              >
-                                Book Consultation
-                              </button>
-                              <a
-                                href={`tel:${msg.suggestedLawyer.phone}`}
-                                className="px-3 py-1.5 rounded-lg border border-legal-gold/30 text-legal-gold hover:bg-legal-gold/10 text-xs font-bold transition-all flex items-center justify-center"
-                              >
-                                Call
-                              </a>
-                            </div>
-                          </div>
-                        )}
-                        
                         <div className="text-[9px] text-right mt-1.5 opacity-50 font-sans font-semibold">
                           {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </div>

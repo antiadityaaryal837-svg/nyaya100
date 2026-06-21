@@ -1,9 +1,8 @@
 import type { Metadata } from 'next';
-import { Fredoka, Noto_Sans_Devanagari, Inter, Poppins } from 'next/font/google';
+import { Fredoka, Noto_Sans_Devanagari } from 'next/font/google';
 import './globals.css';
 import { AuthProvider } from '@/lib/auth';
 import { LanguageProvider } from '@/lib/LanguageContext';
-import ThemeWrapper from '@/components/ThemeWrapper';
 
 const fredoka = Fredoka({
   subsets: ['latin'],
@@ -16,20 +15,6 @@ const notoDevanagari = Noto_Sans_Devanagari({
   subsets: ['devanagari'],
   weight: ['300', '400', '500', '600', '700'],
   variable: '--font-noto-devanagari',
-  display: 'swap',
-});
-
-const inter = Inter({
-  subsets: ['latin'],
-  weight: ['300', '400', '500', '600', '700', '800'],
-  variable: '--font-inter',
-  display: 'swap',
-});
-
-const poppins = Poppins({
-  subsets: ['latin'],
-  weight: ['300', '400', '500', '600', '700', '800'],
-  variable: '--font-poppins',
   display: 'swap',
 });
 
@@ -50,7 +35,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="en"
-      className={`${fredoka.variable} ${notoDevanagari.variable} ${inter.variable} ${poppins.variable} scroll-smooth`}
+      className={`${fredoka.variable} ${notoDevanagari.variable} scroll-smooth`}
       suppressHydrationWarning
     >
       <head>
@@ -73,9 +58,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="font-sans antialiased min-h-screen bg-brand-50 dark:bg-legal-navy-dark text-[#0B192C] dark:text-[#EBF4FF] transition-colors duration-300">
         <AuthProvider>
           <LanguageProvider>
-            <ThemeWrapper>
-              {children}
-            </ThemeWrapper>
+            {children}
           </LanguageProvider>
         </AuthProvider>
       </body>

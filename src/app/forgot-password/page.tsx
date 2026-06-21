@@ -28,8 +28,8 @@ export default function ForgotPassword() {
 
       <div className="w-full max-w-md space-y-8 animate-slide-up relative z-10">
         <div className="text-center">
-          <div className="inline-flex p-2.5 rounded-2xl bg-white border border-legal-gold/30 mb-4 h-16 w-16 items-center justify-center overflow-hidden">
-            <img src="/image/logo.png" alt="Logo" className="h-11 w-11 object-contain" />
+          <div className="inline-flex p-3 rounded-2xl bg-legal-gold/15 border border-legal-gold/30 text-legal-gold mb-4">
+            <Scale className="h-8 w-8" />
           </div>
           <h2 className="font-serif text-3xl font-bold tracking-tight text-legal-navy dark:text-legal-bone-light">
             Reset Password

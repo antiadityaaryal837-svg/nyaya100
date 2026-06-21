@@ -60,8 +60,8 @@ const Header: React.FC = () => {
 
           {/* Brand logo */}
           <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="p-0.5 rounded-2xl bg-white border border-gold-500/30 group-hover:border-gold-500/60 transition-all h-14 w-14 flex items-center justify-center overflow-hidden">
-              <img src="/image/logo.png" alt="Logo" className="h-[52px] w-[52px] object-contain" />
+            <div className="p-2 rounded-2xl bg-gradient-to-br from-gold-500/20 to-gold-600/10 border border-gold-500/30 group-hover:border-gold-500/60 transition-all">
+              <Scale className="h-5 w-5 text-gold-500" />
             </div>
             <div className="hidden sm:block">
               <span className="font-bold text-[1.1rem] tracking-wide text-[#0B192C] dark:text-brand-50 group-hover:text-brand-700 dark:group-hover:text-brand-200 transition-colors block leading-none">

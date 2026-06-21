@@ -248,5 +248,6 @@ I can answer questions related to:
 - **Civil Law** — National Civil Code (Muluki Civil Code), 2074 BS (contracts, property, obligations)
 
 Please ask me a specific legal question and I'll provide a detailed answer with article/section references.
-`;
+
+*Note: Add your GEMINI_API_KEY in .env.local for full AI-powered responses grounded in the actual PDF documents.*`;
 }
