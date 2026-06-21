@@ -48,9 +48,9 @@ module.exports = {
             dark:    '#F0EEE9',
           },
           gold: {
-            DEFAULT: 'rgb(var(--legal-gold) / <alpha-value>)',
-            light:   'rgb(var(--legal-gold-light) / <alpha-value>)',
-            dark:    'rgb(var(--legal-gold-dark) / <alpha-value>)',
+            DEFAULT: '#D4AF37',
+            light:   '#E6C76A',
+            dark:    '#B8962E',
           },
           blue: {
             DEFAULT: '#4299E1',
